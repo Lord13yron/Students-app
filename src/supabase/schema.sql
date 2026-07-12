@@ -21,23 +21,17 @@ create table household_members (
 
 -- 1.3 students
 create table students (
-  id           uuid primary key default gen_random_uuid(),
-  household_id uuid not null references households(id) on delete cascade,
-  name         text not null,
-  notes        text,
-  created_at   timestamptz not null default now()
-);
-
--- 1.4 stays
-create table stays (
   id             uuid primary key default gen_random_uuid(),
-  student_id     uuid not null references students(id) on delete restrict,
-  arrival_date   date not null,
-  departure_date date,
+  household_id   uuid not null references households(id) on delete cascade,
+  name           text not null,
+  notes          text,
+  arrival_date   date,                 -- may be unknown when a student is first assigned
+  departure_date date,                 -- reference only; not the active signal
+  is_active      boolean not null default true,  -- drives shared-expense splitting
   created_at     timestamptz not null default now()
 );
 
--- 1.5 income_entries
+-- 1.4 income_entries
 create table income_entries (
   id           uuid primary key default gen_random_uuid(),
   household_id uuid not null references households(id) on delete cascade,
@@ -48,7 +42,7 @@ create table income_entries (
   created_at   timestamptz not null default now()
 );
 
--- 1.6 expenses
+-- 1.5 expenses
 create table expenses (
   id           uuid primary key default gen_random_uuid(),
   household_id uuid not null references households(id) on delete cascade,

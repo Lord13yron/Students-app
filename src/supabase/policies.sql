@@ -28,12 +28,11 @@ alter table income_entries alter column created_by set default auth.uid();
 alter table expenses       alter column created_by set default auth.uid();
 
 -- ---------------------------------------------------------------------------
--- 3. Enable Row-Level Security on all six tables.
+-- 3. Enable Row-Level Security on all five tables.
 -- ---------------------------------------------------------------------------
 alter table households        enable row level security;
 alter table household_members enable row level security;
 alter table students          enable row level security;
-alter table stays             enable row level security;
 alter table income_entries    enable row level security;
 alter table expenses          enable row level security;
 
@@ -60,13 +59,6 @@ create policy students_all on students
   for all
   using (is_household_member(household_id))
   with check (is_household_member(household_id));
-
--- stays: no household_id of their own — reach it through students.
-drop policy if exists stays_all on stays;
-create policy stays_all on stays
-  for all
-  using (student_id in (select id from students where is_household_member(household_id)))
-  with check (student_id in (select id from students where is_household_member(household_id)));
 
 -- income_entries: full CRUD within your household.
 drop policy if exists income_entries_all on income_entries;
